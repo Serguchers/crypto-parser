@@ -12,7 +12,7 @@ options = {
 
 setup(
     name='Exchange_rate_parser',
-    version='1.3',
+    version='1.4',
     description='Simple parser and table builder.',
     options=options,
     executables=[Executable('table_builder.py')]

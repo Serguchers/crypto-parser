@@ -1,28 +1,33 @@
+from itertools import count
 import time
 
 from rich.live import Live
 from rich.table import Table
 from rich.align import Align
 from rich import box
-from runner import main
+#from runner import main
 import winsound
+from test_data import data as test_data
 
 REFRESH_COUNT = 15
 NEED_NEW_DATA = False
-data = main()
+data = test_data[0]
+counter = 0
 
 def generate_table() -> Table:
     """Make a new table."""
     global NEED_NEW_DATA
     global REFRESH_COUNT
     global data
+    global counter
     
     REFRESH_COUNT -= 1
     if REFRESH_COUNT == 0:
         NEED_NEW_DATA = True
         REFRESH_COUNT = 15
+        counter += 1
     if NEED_NEW_DATA:
-        data = main()
+        data = test_data[counter]
         NEED_NEW_DATA = False
         
 
@@ -89,7 +94,7 @@ def generate_table() -> Table:
         #     table.add_row(website_name, buy, sell)
     
     table.add_row('---', '---', '---')
-    table.add_row('time to update', f'{time.ctime()}', f'{REFRESH_COUNT}', style='blue')
+    table.add_row('time to update', '-', f'{REFRESH_COUNT}', style='blue')
     table_centered = Align.center(table)
     return table_centered
 

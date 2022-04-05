@@ -7,7 +7,6 @@ USDT_USD_PAIR = {}
 HEADERS = {
     'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Mobile Safari/537.36'}
 HEADERS_HUOBI = {
-    
 }
 
 
@@ -61,21 +60,20 @@ def get_data(resource=None):
         return True
 
     if resource == 'kucoin':
-        data = requests.get('https://www.kucoin.com/_api/dispatch/v1/quotes?fiatCurrency=RUB&cryptoCurrency=USDT&amount=100&quoteType=CRYPTO&source=WEB&side=BUY&platform=KUCOIN&lang=en_US', headers=HEADERS).json()
-        data_sell = requests.get('https://www.kucoin.com/_api/dispatch/v1/quotes?fiatCurrency=RUB&cryptoCurrency=USDT&amount=100&quoteType=CRYPTO&source=WEB&side=SELL&platform=KUCOIN&lang=en_US',
-                                 headers=HEADERS).json()
+        try:
+            request = requests.get('https://www.kucoin.com/_api/dispatch/v1/quotes?fiatCurrency=RUB&cryptoCurrency=USDT&quoteType=CRYPTO&source=WEB&side=BUY&platform=KUCOIN&lang=en_US', headers=HEADERS)
+        except requests.exceptions.ConnectionError:
+            return None
+        data = request.json()
         
         try:
-            USDT_RUB_PAIR['kucoin_qiwi'] = {'buy': data['data']['quotes'][1]['price'],
-                                            'sell': data_sell['data']['quotes'][1]['price']}
-            USDT_RUB_PAIR['kucoin_payeer'] = {'buy': data['data']['quotes'][4]['price'],
-                                              'sell': data_sell['data']['quotes'][4]['price']}
-            USDT_RUB_PAIR['kucoin_ADVcash'] = {'buy': data['data']['quotes'][5]['price'],
-                                               'sell': data_sell['data']['quotes'][5]['price']}
+            USDT_RUB_PAIR['kucoin'] = {'buy': data['data']['quotes'][0]['price'],
+                                            'sell': 0}
+
         except:
             USDT_RUB_PAIR['kucoin_qiwi'] = {'buy': 0, 'sell': 0}
-            USDT_RUB_PAIR['kucoin_payeer'] = {'buy': 0, 'sell': 0}
-            USDT_RUB_PAIR['kucoin_ADVcash'] = {'buy': 0, 'sell': 0}
+        return True
+
 
     if resource == 'yobit':
         data = requests.get('https://yobit.net/api/3/ticker/usd_rur-usdt_rur-usdt_usd', headers=HEADERS).json()
@@ -117,8 +115,9 @@ def get_data(resource=None):
 def main():
     binance = get_data('binance')
     huobi = get_data('huobi')
+    kucoin = get_data('kucoin')
     AAX = get_data('f2c')
-    if binance is None or huobi is None or AAX is None:
+    if binance is None or huobi is None or AAX is None or kucoin is None:
         return {'USD_RUB_PAIR': USD_RUB_PAIR, 'USDT_RUB_PAIR': USDT_RUB_PAIR, 'USDT_USD_PAIR': USDT_USD_PAIR,
                 'headers': {'name': 'LOST CONNECTION', 'style': 'red'}}
 
@@ -130,4 +129,4 @@ def main():
 if __name__ == '__main__':
     result = main()
 
-    pprint(result['USDT_RUB_PAIR'])
+    pprint(result)
