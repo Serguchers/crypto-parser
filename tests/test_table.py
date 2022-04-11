@@ -1,18 +1,16 @@
-from itertools import count
 import time
-
+import winsound
 from rich.live import Live
 from rich.table import Table
 from rich.align import Align
 from rich import box
-#from runner import main
-import winsound
 from test_data import data as test_data
 
 REFRESH_COUNT = 15
 NEED_NEW_DATA = False
 data = test_data[0]
 counter = 0
+kucoin_previous_price = float(data['USDT_RUB_PAIR']['kucoin']['buy'])
 
 def generate_table() -> Table:
     """Make a new table."""
@@ -20,6 +18,7 @@ def generate_table() -> Table:
     global REFRESH_COUNT
     global data
     global counter
+    global kucoin_previous_price
     
     REFRESH_COUNT -= 1
     if REFRESH_COUNT == 0:
@@ -42,7 +41,10 @@ def generate_table() -> Table:
 
     
     buy_to_check = convert_values('buy', usdt_rub_data)
-    #best_buy = min(buy_to_check, key=lambda x: x[1])[0]
+    print(buy_to_check[3][1], kucoin_previous_price)
+    if compare_values(buy_to_check[3][1], kucoin_previous_price):
+        send_message(buy_to_check[0][1], buy_to_check[1][1])
+    kucoin_previous_price = buy_to_check[3][1]
     huobi_binance = list(filter(lambda x: x[0] == 'huobi' or x[0] == 'binance', buy_to_check))
     BUY_CALL = False
     if check_pair('buy', huobi_binance):
@@ -118,7 +120,53 @@ def convert_values(action:str, values):
         converted_values.append((i, price))
     return converted_values
     
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
+
+def check_pair(action, pair):
+    binance = pair[0][1]
+    huobi = pair[1][1]
+    
+    if action == 'buy':
+        return huobi < binance
+    if action == 'sell':
+        binance = binance * 1.01
+        return huobi > binance
+    
+def convert_values(action:str, values):
+    converted_values = []
+    for i in values:
+        try:
+            price = float(values[i][action])
+        except:
+            price = 0
+        converted_values.append((i, price))
+    return converted_values
+
+def compare_values(current, previous):
+    if abs(current - previous) >= 0.1:
+        return True
+    return False
+
+def send_message(binance, kucoin):
+    msg = MIMEMultipart()
+
+    message = f'Текущая цена kucoin: {kucoin} \n Текущая цена binance: {binance} \n Разница: {(binance*0.999-kucoin*0.999)}'
+
+    password = 'rnbbfukzculujsef'
+    msg['From'] = 'mycryptonotifier@yandex.ru'
+    msg['To'] = 'sergucho.gaming@gmail.com'
+    msg['Subject'] = 'Notification'
+
+    msg.attach(MIMEText(message, 'plain'))
+
+    server = smtplib.SMTP_SSL('smtp.yandex.ru', 465)
+    server.login(msg['From'], password)  
+    server.send_message(msg)
+    server.quit()
+    
 with Live(generate_table()) as live:
     while True:
         live.update(generate_table())

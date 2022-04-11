@@ -7,6 +7,19 @@ USDT_USD_PAIR = {}
 HEADERS = {
     'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Mobile Safari/537.36'}
 HEADERS_HUOBI = {
+    'accept': 'application/json, text/plain, */*',
+    'accept-encoding': 'gzip, deflate, br',
+    'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+    'client-type': 'web',
+    'origin': 'https://c2c.huobi.com',
+    'otc-language': 'ru-RU',
+    'portal': 'web',
+    'referer':'https://c2c.huobi.com/',
+    'token': 'undefined',
+    'trace_id': '74a75059-00da-445d-a2c4-9527ff3506e2',
+    'uid': '0',
+    'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.109 Mobile Safari/537.36',
+    'x-requested-with': 'XMLHttpRequest'
 }
 
 
