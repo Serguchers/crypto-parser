@@ -5,7 +5,8 @@ USDT_RUB_PAIR = {}
 USD_RUB_PAIR = {}
 USDT_USD_PAIR = {}
 HEADERS = {
-    'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Mobile Safari/537.36'}
+    'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Mobile Safari/537.36'
+    }
 HEADERS_HUOBI = {
     'accept': 'application/json, text/plain, */*',
     'accept-encoding': 'gzip, deflate, br',
@@ -84,7 +85,7 @@ def get_data(resource=None):
                                             'sell': 0}
 
         except:
-            USDT_RUB_PAIR['kucoin_qiwi'] = {'buy': 0, 'sell': 0}
+            USDT_RUB_PAIR['kucoin'] = {'buy': 0, 'sell': 0}
         return True
 
 
