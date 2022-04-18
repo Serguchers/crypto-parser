@@ -28,15 +28,23 @@ def compare_values(current, previous):
         return True
     return False
 
-def send_message(binance, kucoin):
+def send_message(binance, kucoin, kucoin_sell, email):
     msg = MIMEMultipart()
-    difference = round(float(binance*0.999-kucoin*0.999), 2)
-    difference_percents = round((float(binance*0.999 / kucoin*0.999) - 1) * 100, 3)
-    message = f'Текущая цена kucoin: {kucoin} \n Текущая цена binance: {binance} \n Разница: {difference} ({difference_percents}%)'
+    difference_buy = round(float(binance*0.999-kucoin*0.999), 2)
+    difference_sell = round(float(kucoin_sell*0.999-binance*0.999), 2)
+    try:
+        difference_percents_buy = round((float(binance*0.999 / kucoin*0.999) - 1) * 100, 3)
+    except ZeroDivisionError:
+        raise ZeroDivisionError
+    try:
+        difference_percents_sell = round((float(kucoin_sell*0.999 / binance*0.999) - 1) * 100, 3)
+    except ZeroDivisionError:
+        raise ZeroDivisionError
+    message = f'K_b: {kucoin}, K_s: {kucoin_sell}, B: {binance} \n P_b: {difference_buy} ({difference_percents_buy}%) P_s: {difference_sell} ({difference_percents_sell}% \n Актуальная информация.'
 
     password = MY_PASSWORD
     msg['From'] = MY_EMAIL
-    msg['To'] = TARGET_EMAIL
+    msg['To'] = email
     msg['Subject'] = '!!! KUCOIN !!!'
 
     msg.attach(MIMEText(message, 'plain'))

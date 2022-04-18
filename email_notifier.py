@@ -1,11 +1,13 @@
+from email import header
+import logging
+import time
 from asyncio.log import logger
 from pprint import pprint
-import requests
-import time
-from utils import convert_values, compare_values, send_message
-import email_log
-import logging
 
+import requests
+
+import email_log
+from utils import compare_values, convert_values, send_message
 
 USDT_RUB_PAIR = {}
 HEADERS = {
@@ -34,13 +36,16 @@ def get_data(resource=None):
         try:
             request = requests.get(
                 'https://www.kucoin.com/_api/dispatch/v1/quotes?fiatCurrency=RUB&cryptoCurrency=USDT&quoteType=CRYPTO&source=WEB&side=BUY&platform=KUCOIN&lang=en_US', headers=HEADERS)
+            request_sell = requests.get(
+                'https://www.kucoin.com/_api/dispatch/v1/quotes?fiatCurrency=RUB&cryptoCurrency=USDT&quoteType=CRYPTO&source=WEB&side=SELL&platform=KUCOIN&lang=en_US', headers=HEADERS)
         except requests.exceptions.ConnectionError:
             return None
         data = request.json()
+        data_sell = request_sell.json()
 
         try:
             USDT_RUB_PAIR['kucoin'] = {'buy': data['data']['quotes'][0]['price'],
-                                       'sell': 0}
+                                       'sell':  data_sell['data']['quotes'][0]['price']}
 
         except:
             USDT_RUB_PAIR['kucoin'] = {'buy': 0, 'sell': 0}
@@ -49,6 +54,7 @@ def get_data(resource=None):
 
 def main():
     first_run = True
+    message_sent = time.time()
     while True:
         binance = get_data('binance')
         kucoin = get_data('kucoin')
@@ -59,16 +65,26 @@ def main():
             continue
 
         converted_to_float = convert_values('buy', USDT_RUB_PAIR)
+        converted_to_float_sell = convert_values('sell', USDT_RUB_PAIR)
+        print(converted_to_float)
+        print(converted_to_float_sell)
         if first_run:
             kucoin_previous_value = converted_to_float[1][1]
+            kucoin_previous_value_sell = converted_to_float_sell[1][1]
             first_run = False
 
-        if compare_values(converted_to_float[1][1], kucoin_previous_value):
-            send_message(converted_to_float[0][1], converted_to_float[1][1])
-            email_logger.debug('MESSAGE SENT')
-        print(converted_to_float[1][1], kucoin_previous_value)
+        if compare_values(converted_to_float[1][1], kucoin_previous_value) or \
+            compare_values(converted_to_float_sell[1][1], kucoin_previous_value_sell):
+                current_time = time.time()
+                if current_time - message_sent > 60:
+                    send_message(converted_to_float[0][1], converted_to_float[1][1], converted_to_float_sell[1][1], 'bare.brann@yandex.ru')
+                    send_message(converted_to_float[0][1], converted_to_float[1][1], converted_to_float_sell[1][1], 'Info@dashewski.ru')
+                    email_logger.debug('MESSAGE SENT')
+                    message_sent = time.time()
+
         kucoin_previous_value = converted_to_float[1][1]
-        email_logger.debug('SUCCESS')
+        kucoin_previous_value_sell = converted_to_float_sell[1][1]
+        email_logger.debug(f'SUCCESS {USDT_RUB_PAIR}')
         time.sleep(15)
 
 

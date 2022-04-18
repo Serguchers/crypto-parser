@@ -75,14 +75,18 @@ def get_data(resource=None):
 
     if resource == 'kucoin':
         try:
-            request = requests.get('https://www.kucoin.com/_api/dispatch/v1/quotes?fiatCurrency=RUB&cryptoCurrency=USDT&quoteType=CRYPTO&source=WEB&side=BUY&platform=KUCOIN&lang=en_US', headers=HEADERS)
+            request = requests.get(
+                'https://www.kucoin.com/_api/dispatch/v1/quotes?fiatCurrency=RUB&cryptoCurrency=USDT&quoteType=CRYPTO&source=WEB&side=BUY&platform=KUCOIN&lang=en_US', headers=HEADERS)
+            request_sell = requests.get(
+                'https://www.kucoin.com/_api/dispatch/v1/quotes?fiatCurrency=RUB&cryptoCurrency=USDT&quoteType=CRYPTO&source=WEB&side=SELL&platform=KUCOIN&lang=en_US', headers=HEADERS)
         except requests.exceptions.ConnectionError:
             return None
         data = request.json()
-        
+        data_sell = request_sell.json()
+
         try:
             USDT_RUB_PAIR['kucoin'] = {'buy': data['data']['quotes'][0]['price'],
-                                            'sell': 0}
+                                       'sell':  data_sell['data']['quotes'][0]['price']}
 
         except:
             USDT_RUB_PAIR['kucoin'] = {'buy': 0, 'sell': 0}
